@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "share.create.response.schema.json",
+  "type": "object",
+  "required": ["share_id"],
+  "properties": {
+    "share_id": {"type": "string"},
+    "expires_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "config.schema.json",
+  "type": "object",
+  "required": ["version", "questions", "gym_types", "scoring_rules"],
+  "properties": {
+    "version": {"type": "string"},
+    "questions": {
+      "type": "array",
+      "items": {"$ref": "common.schema.json#/$defs/Question"}
+    },
+    "gym_types": {
+      "type": "array",
+      "items": {"$ref": "common.schema.json#/$defs/GymType"}
+    },
+    "scoring_rules": {
+      "type": "array",
+      "items": {"$ref": "common.schema.json#/$defs/ScoringRule"}
+    }
+  },
+  "additionalProperties": false
+}

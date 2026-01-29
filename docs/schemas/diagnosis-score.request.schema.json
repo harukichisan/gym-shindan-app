@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "diagnosis-score.request.schema.json",
+  "type": "object",
+  "required": ["mode", "answers"],
+  "properties": {
+    "mode": {"$ref": "common.schema.json#/$defs/Mode"},
+    "answers": {
+      "type": "array",
+      "items": {"$ref": "common.schema.json#/$defs/Answer"},
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}

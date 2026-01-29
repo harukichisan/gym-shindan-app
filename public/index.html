@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ジム診断 - あなたに合いやすいジムタイプを見つける</title>
+  <meta name="description" content="短い質問で、あなたに合いやすいジムの種類を3つ提案します。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient"></div>
+  <main id="app" class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">GYM</div>
+        <div>
+          <h1>ジム診断</h1>
+          <p>3分で、あなたに合いやすいジムの“種類”がわかります</p>
+        </div>
+      </div>
+      <div class="header-note">医療的な診断ではありません。無理のない範囲で進めてください。</div>
+    </header>
+
+    <section id="view-start" class="view">
+      <div class="card hero">
+        <h2>はじめてのジム選びを、迷わず。</h2>
+        <p>短い質問に答えるだけで、あなたに合いやすいジムタイプを3つ提案します。</p>
+        <div class="mode-grid" id="mode-grid">
+          <button class="mode-card" data-mode="simple" type="button">
+            <div class="mode-title">簡単診断</div>
+            <div class="mode-meta">所要: 1〜2分 / 6問前後</div>
+            <div class="mode-desc">まずはざっくり相性を知りたい方向け</div>
+          </button>
+          <button class="mode-card" data-mode="complex" type="button">
+            <div class="mode-title">複雑診断</div>
+            <div class="mode-meta">所要: 4〜6分 / 15〜30問</div>
+            <div class="mode-desc">痛み/不調への配慮まで丁寧に見たい方向け</div>
+          </button>
+        </div>
+        <label class="checkbox">
+          <input id="agree-disclaimer" type="checkbox" />
+          <span>医療的な診断ではなく、一般情報としての提案であることに同意します</span>
+        </label>
+        <button id="start-btn" class="btn primary" type="button" disabled>診断をはじめる</button>
+      </div>
+
+      <div class="info-row">
+        <div class="info-card">
+          <h3>根拠が見える</h3>
+          <p>回答に紐づく理由だけを表示します</p>
+        </div>
+        <div class="info-card">
+          <h3>不安に配慮</h3>
+          <p>痛み/不調がある場合も安全視点を提示</p>
+        </div>
+        <div class="info-card">
+          <h3>次の一歩</h3>
+          <p>体験で見るポイントを明確化</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-question" class="view hidden">
+      <div class="card">
+        <div class="progress">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="question-header">
+          <span id="question-section" class="section-tag"></span>
+          <span id="question-count" class="muted"></span>
+        </div>
+        <h2 id="question-title" class="question-title"></h2>
+        <div id="question-options" class="options"></div>
+        <div id="question-hint" class="hint"></div>
+      </div>
+      <div class="nav-row">
+        <button id="back-btn" class="btn ghost" type="button">戻る</button>
+        <button id="next-btn" class="btn primary" type="button">次へ</button>
+      </div>
+    </section>
+
+    <section id="view-result" class="view hidden">
+      <div id="safety-banner" class="alert hidden"></div>
+
+      <div class="card result-hero">
+        <h2>あなたに合いやすい順</h2>
+        <p class="muted">どれか1つが正解というわけではなく、相性の傾向です。</p>
+        <div id="result-cards" class="result-grid"></div>
+      </div>
+
+      <div class="card">
+        <h3>あなたの継続ボトルネック</h3>
+        <ul id="bottlenecks" class="list"></ul>
+      </div>
+
+      <div class="card">
+        <h3>最初の4週間ミニプラン</h3>
+        <div id="plan" class="plan"></div>
+      </div>
+
+      <div class="card">
+        <h3>施設に伝えるテンプレ</h3>
+        <p id="facility-template" class="template"></p>
+      </div>
+
+      <div class="card share">
+        <h3>結果を共有する</h3>
+        <p class="muted">このリンクに個人情報は含まれません。</p>
+        <div class="share-row">
+          <input id="share-link" class="input" type="text" readonly />
+          <button id="copy-btn" class="btn secondary" type="button">リンクをコピー</button>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button id="restart-btn" class="btn ghost" type="button">最初からやり直す</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

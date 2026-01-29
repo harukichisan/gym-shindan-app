@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "diagnosis-score.response.schema.json",
+  "type": "object",
+  "required": ["result_top3", "reasons", "safety_flags", "bottlenecks", "first_4weeks"],
+  "properties": {
+    "result_top3": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "reasons": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string"}
+      }
+    },
+    "safety_flags": {"$ref": "common.schema.json#/$defs/SafetyFlags"},
+    "bottlenecks": {"type": "array", "items": {"type": "string"}},
+    "first_4weeks": {"$ref": "common.schema.json#/$defs/First4WeeksPlan"}
+  },
+  "additionalProperties": false
+}

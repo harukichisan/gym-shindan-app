@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "$defs": {
+    "Mode": {
+      "type": "string",
+      "enum": ["simple", "complex"]
+    },
+    "QuestionType": {
+      "type": "string",
+      "enum": ["single", "multi", "slider", "text"]
+    },
+    "SafetyFlags": {
+      "type": "object",
+      "required": ["pain_present", "red_flag_maybe"],
+      "properties": {
+        "pain_present": {"type": "boolean"},
+        "red_flag_maybe": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "AnswerValue": {
+      "anyOf": [
+        {"type": "string"},
+        {"type": "number"},
+        {"type": "array", "items": {"type": "string"}}
+      ]
+    },
+    "QuestionOption": {
+      "type": "object",
+      "required": ["value", "label"],
+      "properties": {
+        "value": {"type": "string"},
+        "label": {"type": "string"},
+        "example": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "BranchingRule": {
+      "type": "object",
+      "required": ["if", "then"],
+      "properties": {
+        "if": {
+          "type": "object",
+          "required": ["question_id", "operator", "value"],
+          "properties": {
+            "question_id": {"type": "string"},
+            "operator": {"type": "string", "enum": ["eq", "neq", "in", "not_in"]},
+            "value": {
+              "anyOf": [
+                {"type": "string"},
+                {"type": "array", "items": {"type": "string"}}
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "then": {
+          "type": "object",
+          "required": ["action"],
+          "properties": {
+            "action": {"type": "string", "enum": ["skip_to", "end"]},
+            "target": {"type": "string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "Question": {
+      "type": "object",
+      "required": ["id", "mode", "type", "prompt"],
+      "properties": {
+        "id": {"type": "string"},
+        "mode": {"$ref": "common.schema.json#/$defs/Mode"},
+        "section": {"type": "string"},
+        "type": {"$ref": "common.schema.json#/$defs/QuestionType"},
+        "prompt": {"type": "string"},
+        "options": {
+          "type": "array",
+          "items": {"$ref": "common.schema.json#/$defs/QuestionOption"}
+        },
+        "example_hint": {"type": "string"},
+        "branching_rules": {
+          "type": "array",
+          "items": {"$ref": "common.schema.json#/$defs/BranchingRule"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "GymType": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "price_range": {"type": "string"},
+        "fit_reasons": {"type": "array", "items": {"type": "string"}},
+        "cautions": {"type": "array", "items": {"type": "string"}},
+        "pain_considerations": {"type": "array", "items": {"type": "string"}},
+        "checklist_items": {"type": "array", "items": {"type": "string"}},
+        "tags": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "ScoringRule": {
+      "type": "object",
+      "required": ["gym_type_id", "trait_id", "weight"],
+      "properties": {
+        "gym_type_id": {"type": "string"},
+        "trait_id": {"type": "string"},
+        "weight": {"type": "number"},
+        "reason_template": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "Answer": {
+      "type": "object",
+      "required": ["question_id", "value"],
+      "properties": {
+        "question_id": {"type": "string"},
+        "value": {"$ref": "common.schema.json#/$defs/AnswerValue"}
+      },
+      "additionalProperties": false
+    },
+    "First4WeeksPlan": {
+      "type": "object",
+      "required": ["frequency", "duration", "focus"],
+      "properties": {
+        "frequency": {"type": "string"},
+        "duration": {"type": "string"},
+        "focus": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "SharePayload": {
+      "type": "object",
+      "required": ["v", "mode", "result_top3", "safety_flags"],
+      "properties": {
+        "v": {"type": "number"},
+        "mode": {"$ref": "common.schema.json#/$defs/Mode"},
+        "result_top3": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "reasons": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        },
+        "safety_flags": {"$ref": "common.schema.json#/$defs/SafetyFlags"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

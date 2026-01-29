@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "share.create.request.schema.json",
+  "type": "object",
+  "required": ["payload"],
+  "properties": {
+    "payload": {"$ref": "common.schema.json#/$defs/SharePayload"}
+  },
+  "additionalProperties": false
+}

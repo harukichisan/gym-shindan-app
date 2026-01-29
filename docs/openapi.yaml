@@ -1,0 +1,395 @@
+openapi: 3.1.0
+info:
+  title: Gym Diagnosis Browser App API
+  version: 0.1.0
+  description: API for gym diagnosis (MVP: share only)
+servers:
+  - url: /
+paths:
+  /api/v1/config:
+    get:
+      summary: Get config (questions, gym types, scoring rules)
+      tags: [Config]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /api/v1/diagnoses/score:
+    post:
+      summary: Score diagnosis from answers
+      tags: [Diagnosis]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiagnosisScoreRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosisScoreResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /api/v1/share:
+    post:
+      summary: Create share link
+      tags: [Share]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareCreateResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /api/v1/share/{share_id}:
+    get:
+      summary: Get share payload
+      tags: [Share]
+      parameters:
+        - name: share_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareGetResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /api/v1/health:
+    get:
+      summary: Health check
+      tags: [Health]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                required: [status]
+components:
+  responses:
+    ErrorResponse:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    Mode:
+      type: string
+      enum: [simple, complex]
+    QuestionType:
+      type: string
+      enum: [single, multi, slider, text]
+    QuestionOption:
+      type: object
+      required: [value, label]
+      properties:
+        value:
+          type: string
+        label:
+          type: string
+        example:
+          type: string
+      additionalProperties: false
+    BranchingRule:
+      type: object
+      required: [if, then]
+      properties:
+        if:
+          type: object
+          required: [question_id, operator, value]
+          properties:
+            question_id:
+              type: string
+            operator:
+              type: string
+              enum: [eq, neq, in, not_in]
+            value:
+              anyOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
+          additionalProperties: false
+        then:
+          type: object
+          required: [action]
+          properties:
+            action:
+              type: string
+              enum: [skip_to, end]
+            target:
+              type: string
+          additionalProperties: false
+      additionalProperties: false
+    Question:
+      type: object
+      required: [id, mode, type, prompt]
+      properties:
+        id:
+          type: string
+        mode:
+          $ref: '#/components/schemas/Mode'
+        section:
+          type: string
+        type:
+          $ref: '#/components/schemas/QuestionType'
+        prompt:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionOption'
+        example_hint:
+          type: string
+        branching_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/BranchingRule'
+      additionalProperties: false
+    GymType:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price_range:
+          type: string
+        fit_reasons:
+          type: array
+          items:
+            type: string
+        cautions:
+          type: array
+          items:
+            type: string
+        pain_considerations:
+          type: array
+          items:
+            type: string
+        checklist_items:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    ScoringRule:
+      type: object
+      required: [gym_type_id, trait_id, weight]
+      properties:
+        gym_type_id:
+          type: string
+        trait_id:
+          type: string
+        weight:
+          type: number
+        reason_template:
+          type: string
+      additionalProperties: false
+    AnswerValue:
+      anyOf:
+        - type: string
+        - type: number
+        - type: array
+          items:
+            type: string
+    Answer:
+      type: object
+      required: [question_id, value]
+      properties:
+        question_id:
+          type: string
+        value:
+          $ref: '#/components/schemas/AnswerValue'
+      additionalProperties: false
+    SafetyFlags:
+      type: object
+      required: [pain_present, red_flag_maybe]
+      properties:
+        pain_present:
+          type: boolean
+        red_flag_maybe:
+          type: boolean
+      additionalProperties: false
+    First4WeeksPlan:
+      type: object
+      required: [frequency, duration, focus]
+      properties:
+        frequency:
+          type: string
+        duration:
+          type: string
+        focus:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    SharePayload:
+      type: object
+      required: [v, mode, result_top3, safety_flags]
+      properties:
+        v:
+          type: number
+        mode:
+          $ref: '#/components/schemas/Mode'
+        result_top3:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        reasons:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        safety_flags:
+          $ref: '#/components/schemas/SafetyFlags'
+      additionalProperties: false
+    ConfigResponse:
+      type: object
+      required: [version, questions, gym_types, scoring_rules]
+      properties:
+        version:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        gym_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/GymType'
+        scoring_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoringRule'
+      additionalProperties: false
+    DiagnosisScoreRequest:
+      type: object
+      required: [mode, answers]
+      properties:
+        mode:
+          $ref: '#/components/schemas/Mode'
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+          minItems: 1
+      additionalProperties: false
+    DiagnosisScoreResponse:
+      type: object
+      required: [result_top3, reasons, safety_flags, bottlenecks, first_4weeks]
+      properties:
+        result_top3:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        reasons:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        safety_flags:
+          $ref: '#/components/schemas/SafetyFlags'
+        bottlenecks:
+          type: array
+          items:
+            type: string
+        first_4weeks:
+          $ref: '#/components/schemas/First4WeeksPlan'
+      additionalProperties: false
+    ShareCreateRequest:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          $ref: '#/components/schemas/SharePayload'
+      additionalProperties: false
+    ShareCreateResponse:
+      type: object
+      required: [share_id]
+      properties:
+        share_id:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ShareGetResponse:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          $ref: '#/components/schemas/SharePayload'
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                required: [reason]
+                properties:
+                  field:
+                    type: string
+                  reason:
+                    type: string
+                additionalProperties: false
+          additionalProperties: false
+      additionalProperties: false
