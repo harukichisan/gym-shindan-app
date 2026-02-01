@@ -984,12 +984,15 @@ function encodeSharePayload(payload) {
 }
 
 async function prepareShareLink(results) {
+  const payload = buildSharePayload(results);
+  const encoded = encodeSharePayload(payload);
+  const fallbackHash = `#share=${encoded}`;
+
   if (state.shareId) {
-    elements.shareLink.value = `${location.origin}${location.pathname}?share=${state.shareId}`;
+    elements.shareLink.value = `${location.origin}${location.pathname}?share=${state.shareId}${fallbackHash}`;
     return;
   }
 
-  const payload = buildSharePayload(results);
   elements.shareLink.value = 'リンクを生成中...';
 
   if (state.useApi) {
@@ -1004,7 +1007,7 @@ async function prepareShareLink(results) {
         const shareId = data.share_id;
         if (shareId) {
           state.shareId = shareId;
-          elements.shareLink.value = `${location.origin}${location.pathname}?share=${shareId}`;
+          elements.shareLink.value = `${location.origin}${location.pathname}?share=${shareId}${fallbackHash}`;
           return;
         }
       }
@@ -1014,8 +1017,7 @@ async function prepareShareLink(results) {
     }
   }
 
-  const encoded = encodeSharePayload(payload);
-  elements.shareLink.value = `${location.origin}${location.pathname}#share=${encoded}`;
+  elements.shareLink.value = `${location.origin}${location.pathname}${fallbackHash}`;
 }
 
 async function showResults() {
@@ -1140,29 +1142,36 @@ function reset() {
 
 function getShareInfo() {
   const url = new URL(window.location.href);
-  const shareId = url.searchParams.get('share') || url.searchParams.get('share_id');
-  if (shareId) return { type: 'id', value: shareId };
+  const info = {
+    shareId: url.searchParams.get('share') || url.searchParams.get('share_id'),
+    payload: null,
+  };
 
   if (url.hash.startsWith('#share=')) {
-    return { type: 'payload', value: url.hash.replace('#share=', '') };
+    info.payload = url.hash.replace('#share=', '');
+  } else if (!info.shareId && url.hash.startsWith('#share_id=')) {
+    info.shareId = url.hash.replace('#share_id=', '');
   }
-  if (url.hash.startsWith('#share_id=')) {
-    return { type: 'id', value: url.hash.replace('#share_id=', '') };
-  }
-  return null;
+
+  if (!info.shareId && !info.payload) return null;
+  return info;
 }
 
 async function initFromShare() {
   const info = getShareInfo();
   if (!info) return false;
 
-  if (info.type === 'payload') {
+  if (info.shareId) {
     try {
-      const payload = JSON.parse(decodeURIComponent(escape(atob(info.value))));
+      const response = await fetchWithTimeout(apiUrl(`/api/v1/share/${info.shareId}`), {}, 4000);
+      if (!response.ok) throw new Error('share not found');
+      const data = await response.json();
+      const payload = data.payload;
+      if (!payload) throw new Error('missing payload');
       state.mode = payload.mode || 'simple';
-      state.shareId = null;
+      state.shareId = info.shareId;
       state.results = {
-        top3: payload.result_top3,
+        top3: payload.result_top3 || [],
         reasons: payload.reasons || {},
         safetyFlags: payload.safety_flags || { pain_present: false, red_flag_maybe: false },
         bottlenecks: [],
@@ -1171,19 +1180,15 @@ async function initFromShare() {
       renderResults();
       return true;
     } catch (e) {
-      return false;
+      // fall through to payload fallback if available
     }
   }
 
-  if (info.type === 'id') {
+  if (info.payload) {
     try {
-      const response = await fetchWithTimeout(apiUrl(`/api/v1/share/${info.value}`), {}, 4000);
-      if (!response.ok) throw new Error('share not found');
-      const data = await response.json();
-      const payload = data.payload;
-      if (!payload) return false;
+      const payload = JSON.parse(decodeURIComponent(escape(atob(info.payload))));
       state.mode = payload.mode || 'simple';
-      state.shareId = info.value;
+      state.shareId = null;
       state.results = {
         top3: payload.result_top3 || [],
         reasons: payload.reasons || {},
